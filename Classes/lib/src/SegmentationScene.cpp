@@ -43,6 +43,16 @@ bool SegmentationScene::init() {
     // Create a vector to store the segment sprites
     std::vector<Sprite*> segmentSprites;
 
+    //touch listener?
+    auto listener = EventListenerTouchOneByOne::create();
+    listener->onTouchBegan = CC_CALLBACK_2(SegmentationScene::onTouchBegan, this);
+    listener->onTouchEnded = CC_CALLBACK_2(SegmentationScene::onTouchEnded, this);
+    listener->onTouchMoved = CC_CALLBACK_2(SegmentationScene::onTouchMoved, this);
+    listener->onTouchCancelled = CC_CALLBACK_2(SegmentationScene::onTouchCancelled, this);
+
+    _eventDispatcher->addEventListenerWithSceneGraphPriority(listener, this);
+
+
     // Create and position the segment sprites
     for (int i = 0; i < numPieces; i++) {
         for (int j = 0; j < numPieces; j++) {
@@ -55,15 +65,15 @@ bool SegmentationScene::init() {
             // Add the segment sprite to the vector
             segmentSprites.push_back(segmentSprite);
 
-            auto listener = EventListenerTouchOneByOne::create();
-            listener->onTouchBegan = [](Touch* touch, Event* event) {
-                if (segmentSprite->getBoundingBox().containsPoint(touch->getLocation())) {
-                    // Set the segment sprite as the target for dragging
-                    segmentSprite->setLocalZOrder(1); // Bring the sprite to the front
-                    return true;
-                }
-                return false;
-            };
+//            auto listener = EventListenerTouchOneByOne::create();
+//            listener->onTouchBegan = [](Touch* touch, Event* event) {
+//                if (segmentSprite->getBoundingBox().containsPoint(touch->getLocation())) {
+//                    // Set the segment sprite as the target for dragging
+//                    segmentSprite->setLocalZOrder(1); // Bring the sprite to the front
+//                    return true;
+//                }
+//                return false;
+//            };
 
             // Enable touch events for the segment sprite
 //            segmentSprite->onTouchBegan = [segmentSprite](Touch* touch, Event* event) {
@@ -76,44 +86,44 @@ bool SegmentationScene::init() {
 //                return false;
 //            };
 
-            listener->onTouchMoved = [](Touch* touch, Event* event) {
-                // Move the segment sprite with the touch movement
-                segmentSprite->setPosition(segmentSprite->getPosition() + touch->getDelta());
-            };
+//            listener->onTouchMoved = [](Touch* touch, Event* event) {
+//                // Move the segment sprite with the touch movement
+//                segmentSprite->setPosition(segmentSprite->getPosition() + touch->getDelta());
+//            };
 //            segmentSprite->onTouchMoved = [segmentSprite](Touch* touch, Event* event) {
 //                // Move the segment sprite with the touch movement
 //                segmentSprite->setPosition(segmentSprite->getPosition() + touch->getDelta());
 //            };
 
-            listener->onTouchEnded = [](Touch* touch, Event* event) {
-                // Get the current position of the segment sprite
-                Vec2 currentPosition = segmentSprite->getPosition();
-
-                // Calculate the expected position based on the segment size
-                Vec2 expectedPosition(segmentSize.width * segmentSprite->getTag() % numPieces, segmentSize.height * (numPieces - 1 - segmentSprite->getTag() / numPieces));
-
-                // Calculate the distance between the current position and the expected position
-                float distance = currentPosition.distance(expectedPosition);
-
-                // Define a threshold distance for snapping the segment sprite into place
-                float threshold = segmentSize.width * 0.2;
-
-                // Check if the segment sprite is close enough to the expected position
-                if (distance <= threshold) {
-                    // Snap the segment sprite into place
-                    segmentSprite->setPosition(expectedPosition);
-
-                    // Load the sound effect for connecting puzzle pieces
-                    //TODO: find connect sound and replace path_to_connect_sound.wav
-                    FMOD::Sound* connectSound;
-                    system->createSound("path_to_connect_sound.wav", FMOD_DEFAULT, nullptr, &connectSound);
-
-                    // Play the sound effect for connecting puzzle pieces
-                    system->playSound(connectSound, nullptr, false, nullptr);
-                } else {
-                    // Return the segment sprite to its original position
-                    segmentSprite->setPosition(segmentSprite->getOriginalPosition());
-                }
+//            listener->onTouchEnded = [](Touch* touch, Event* event) {
+//                // Get the current position of the segment sprite
+//                Vec2 currentPosition = segmentSprite->getPosition();
+//
+//                // Calculate the expected position based on the segment size
+//                Vec2 expectedPosition(segmentSize.width * segmentSprite->getTag() % numPieces, segmentSize.height * (numPieces - 1 - segmentSprite->getTag() / numPieces));
+//
+//                // Calculate the distance between the current position and the expected position
+//                float distance = currentPosition.distance(expectedPosition);
+//
+//                // Define a threshold distance for snapping the segment sprite into place
+//                float threshold = segmentSize.width * 0.2;
+//
+//                // Check if the segment sprite is close enough to the expected position
+//                if (distance <= threshold) {
+//                    // Snap the segment sprite into place
+//                    segmentSprite->setPosition(expectedPosition);
+//
+//                    // Load the sound effect for connecting puzzle pieces
+//                    //TODO: find connect sound and replace path_to_connect_sound.wav
+//                    FMOD::Sound* connectSound;
+//                    system->createSound("path_to_connect_sound.wav", FMOD_DEFAULT, nullptr, &connectSound);
+//
+//                    // Play the sound effect for connecting puzzle pieces
+//                    system->playSound(connectSound, nullptr, false, nullptr);
+//                } else {
+//                    // Return the segment sprite to its original position
+//                    segmentSprite->setPosition(segmentSprite->getOriginalPosition());
+//                }
 
                 // Check if the puzzle is completed
                 bool puzzleCompleted = true;
@@ -186,7 +196,7 @@ bool SegmentationScene::init() {
 //                    system->playSound(completeSound, nullptr, false, nullptr);
 //                }
 //            };
-            _eventDispatcher->addEventListenerWithSceneGraphPriority(listener, segmentSprite);
+            //_eventDispatcher->addEventListenerWithSceneGraphPriority(listener, segmentSprite);
         }
     }
 
@@ -201,4 +211,23 @@ bool SegmentationScene::init() {
     }
 
     return true;
+}
+
+bool SegmentationScene::onTouchBegan(Touch* touch, Event* event) {
+    return true;
+}
+
+void SegmentationScene::onTouchEnded(Touch* touch, Event* event)
+{
+    cocos2d::log("touch ended");
+}
+
+void SegmentationScene::onTouchMoved(Touch* touch, Event* event)
+{
+    cocos2d::log("touch moved");
+}
+
+void SegmentationScene::onTouchCancelled(Touch* touch, Event* event)
+{
+    cocos2d::log("touch cancelled");
 }
