@@ -59,11 +59,13 @@ list(APPEND GAME_SOURCE
         Classes/lib/src/AppDelegate.cpp
         Classes/lib/src/HelloWorldScene.cpp
         Classes/lib/src/SegmentationScene.cpp
+        CLasses/lib/src/PuzzlePiece.cpp
 )
 list(APPEND GAME_HEADER
         Classes/lib/include/AppDelegate.h
         Classes/lib/include/HelloWorldScene.h
         Classes/lib/include/SegmentationScene.h
+        Classes/lib/include/PuzzlePiece.h
 )
 
 if(ANDROID)
@@ -122,7 +124,6 @@ endif()
 set(all_code_files
         ${GAME_HEADER}
         ${GAME_SOURCE}
-        Classes/lib/src/SegmentationScene.cpp
 )
 if(NOT ANDROID)
     add_executable(${APP_NAME} ${all_code_files})
