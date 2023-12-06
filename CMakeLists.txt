@@ -1,132 +1,160 @@
-/****************************************************************************
-Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
+#/****************************************************************************
+# Copyright (c) 2013-2014 cocos2d-x.org
+# Copyright (c) 2015-2017 Chukong Technologies Inc.
+#
+# http://www.cocos2d-x.org
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
 
-http://www.cocos2d-x.org
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
+# ****************************************************************************/
 
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
+cmake_minimum_required(VERSION 3.6)
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-THE SOFTWARE.
-****************************************************************************/
+set(APP_NAME MyCppGame)
 
-#include "HelloWorldScene.h"
+project(${APP_NAME})
 
-USING_NS_CC;
+if(XCODE)
+    if(NOT DEFINED CMAKE_XCODE_ATTRIBUTE_IPHONEOS_DEPLOYMENT_TARGET)
+        SET (CMAKE_XCODE_ATTRIBUTE_IPHONEOS_DEPLOYMENT_TARGET 8.0)
+    endif()
+endif()
 
-Scene* HelloWorld::createScene()
-{
-return HelloWorld::create();
-}
+if(NOT DEFINED BUILD_ENGINE_DONE) # to test MyCppGame into root project
+    set(COCOS2DX_ROOT_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cocos2d)
+    set(CMAKE_MODULE_PATH ${COCOS2DX_ROOT_PATH}/cmake/Modules/)
 
-// Print useful error message instead of segfaulting when files are not there.
-static void problemLoading(const char* filename)
-{
-printf("Error while loading: %s\n", filename);
-printf("Depending on how you compiled you might have to add 'Resources/' in front of filenames in HelloWorldScene.cpp\n");
-}
+    include(CocosBuildSet)
+    add_subdirectory(${COCOS2DX_ROOT_PATH}/cocos ${ENGINE_BINARY_PATH}/cocos/core)
+endif()
 
-// on "init" you need to initialize your instance
-bool HelloWorld::init()
-{
-//////////////////////////////
-// 1. super init first
-if ( !Scene::init() )
-{
-return false;
-}
+# record sources, headers, resources...
+set(GAME_SOURCE)
+set(GAME_HEADER)
 
-auto visibleSize = Director::getInstance()->getVisibleSize();
-Vec2 origin = Director::getInstance()->getVisibleOrigin();
+set(GAME_RES_FOLDER
+        "${CMAKE_CURRENT_SOURCE_DIR}/Resources"
+)
+if(APPLE OR WINDOWS)
+    cocos_mark_multi_resources(common_res_files RES_TO "Resources" FOLDERS ${GAME_RES_FOLDER})
+endif()
 
-/////////////////////////////
-// 2. add a menu item with "X" image, which is clicked to quit the program
-//    you may modify it.
+# add cross-platforms source files and header files
+list(APPEND GAME_SOURCE
+        Classes/AppDelegate.cpp
+        Classes/HelloWorldScene.cpp
+)
+list(APPEND GAME_HEADER
+        Classes/AppDelegate.h
+        Classes/HelloWorldScene.h
+)
 
-// add a "close" icon to exit the progress. it's an autorelease object
-auto closeItem = MenuItemImage::create(
-"CloseNormal.png",
-"CloseSelected.png",
-CC_CALLBACK_1(HelloWorld::menuCloseCallback, this));
+if(ANDROID)
+    # change APP_NAME to the share library name for Android, it's value depend on AndroidManifest.xml
+    set(APP_NAME MyGame)
+    list(APPEND GAME_SOURCE
+            proj.android/app/jni/hellocpp/main.cpp
+    )
+elseif(LINUX)
+    list(APPEND GAME_SOURCE
+            proj.linux/main.cpp
+    )
+elseif(WINDOWS)
+    list(APPEND GAME_HEADER
+            proj.win32/main.h
+            proj.win32/resource.h
+    )
+    list(APPEND GAME_SOURCE
+            proj.win32/main.cpp
+            proj.win32/game.rc
+            ${common_res_files}
+    )
+elseif(APPLE)
+    if(IOS)
+        list(APPEND GAME_HEADER
+                proj.ios_mac/ios/AppController.h
+                proj.ios_mac/ios/RootViewController.h
+        )
+        set(APP_UI_RES
+                proj.ios_mac/ios/LaunchScreen.storyboard
+                proj.ios_mac/ios/LaunchScreenBackground.png
+                proj.ios_mac/ios/Images.xcassets
+        )
+        list(APPEND GAME_SOURCE
+                proj.ios_mac/ios/main.m
+                proj.ios_mac/ios/AppController.mm
+                proj.ios_mac/ios/RootViewController.mm
+                proj.ios_mac/ios/Prefix.pch
+                ${APP_UI_RES}
+        )
+    elseif(MACOSX)
+        set(APP_UI_RES
+                proj.ios_mac/mac/Icon.icns
+                proj.ios_mac/mac/Info.plist
+        )
+        list(APPEND GAME_SOURCE
+                proj.ios_mac/mac/main.cpp
+                proj.ios_mac/mac/Prefix.pch
+                ${APP_UI_RES}
+        )
+    endif()
+    list(APPEND GAME_SOURCE ${common_res_files})
+endif()
 
-if (closeItem == nullptr ||
-closeItem->getContentSize().width <= 0 ||
-closeItem->getContentSize().height <= 0)
-{
-problemLoading("'CloseNormal.png' and 'CloseSelected.png'");
-}
-else
-{
-float x = origin.x + visibleSize.width - closeItem->getContentSize().width/2;
-float y = origin.y + closeItem->getContentSize().height/2;
-closeItem->setPosition(Vec2(x,y));
-}
+# mark app complie info and libs info
+set(all_code_files
+        ${GAME_HEADER}
+        ${GAME_SOURCE}
+)
+if(NOT ANDROID)
+    add_executable(${APP_NAME} ${all_code_files})
+else()
+    add_library(${APP_NAME} SHARED ${all_code_files})
+    add_subdirectory(${COCOS2DX_ROOT_PATH}/cocos/platform/android ${ENGINE_BINARY_PATH}/cocos/platform)
+    target_link_libraries(${APP_NAME} -Wl,--whole-archive cpp_android_spec -Wl,--no-whole-archive)
+endif()
 
-// create menu, it's an autorelease object
-auto menu = Menu::create(closeItem, NULL);
-menu->setPosition(Vec2::ZERO);
-this->addChild(menu, 1);
+target_link_libraries(${APP_NAME} cocos2d)
+target_include_directories(${APP_NAME}
+        PRIVATE Classes
+        PRIVATE ${COCOS2DX_ROOT_PATH}/cocos/audio/include/
+)
 
-/////////////////////////////
-// 3. add your codes below...
+# mark app resources
+setup_cocos_app_config(${APP_NAME})
+if(APPLE)
+    set_target_properties(${APP_NAME} PROPERTIES RESOURCE "${APP_UI_RES}")
+    set_xcode_property(${APP_NAME} INSTALL_PATH "\$(LOCAL_APPS_DIR)")
 
-// add a label shows "Hello World"
-// create and initialize a label
+    if(MACOSX)
+        set_xcode_property(${APP_NAME} INFOPLIST_FILE "${CMAKE_CURRENT_SOURCE_DIR}/proj.ios_mac/mac/Info.plist")
+    elseif(IOS)
+        set_xcode_property(${APP_NAME} INFOPLIST_FILE "${CMAKE_CURRENT_SOURCE_DIR}/proj.ios_mac/ios/Info.plist")
+        set_xcode_property(${APP_NAME} ASSETCATALOG_COMPILER_APPICON_NAME "AppIcon")
+    endif()
 
-auto label = Label::createWithTTF("Puzzled", "fonts/Marker Felt.ttf", 24);
-if (label == nullptr)
-{
-problemLoading("'fonts/Marker Felt.ttf'");
-}
-else
-{
-// position the label on the center of the screen
-label->setPosition(Vec2(origin.x + visibleSize.width/2,
-origin.y + visibleSize.height - label->getContentSize().height));
+    # For code-signing, set the DEVELOPMENT_TEAM:
+    #set_xcode_property(${APP_NAME} DEVELOPMENT_TEAM "GRLXXXX2K9")
+elseif(WINDOWS)
+    cocos_copy_target_dll(${APP_NAME})
+endif()
 
-// add the label as a child to this layer
-this->addChild(label, 1);
-}
-
-// add "HelloWorld" splash screen"
-auto sprite = Sprite::create("HelloWorld.png");
-if (sprite == nullptr)
-{
-problemLoading("'HelloWorld.png'");
-}
-else
-{
-// position the sprite on the center of the screen
-sprite->setPosition(Vec2(visibleSize.width/2 + origin.x, visibleSize.height/2 + origin.y));
-
-// add the sprite as a child to this layer
-this->addChild(sprite, 0);
-}
-return true;
-}
-
-
-void HelloWorld::menuCloseCallback(Ref* pSender)
-{
-//Close the cocos2d-x game scene and quit the application
-Director::getInstance()->end();
-
-/*To navigate back to native iOS screen(if present) without quitting the application  ,do not use Director::getInstance()->end() as given above,instead trigger a custom event created in RootViewController.mm as below*/
-
-//EventCustom customEndEvent("game_scene_close_event");
-//_eventDispatcher->dispatchEvent(&customEndEvent);
-
-
-}
+if(LINUX OR WINDOWS)
+    cocos_get_resource_path(APP_RES_DIR ${APP_NAME})
+    cocos_copy_target_res(${APP_NAME} LINK_TO ${APP_RES_DIR} FOLDERS ${GAME_RES_FOLDER})
+endif()
