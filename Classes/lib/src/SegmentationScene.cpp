@@ -198,7 +198,7 @@ bool SegmentationScene::init() {
 //            };
             //_eventDispatcher->addEventListenerWithSceneGraphPriority(listener, segmentSprite);
         }
-    }
+
 
     // Shuffle the segment sprites
     std::random_device rd;
@@ -206,7 +206,7 @@ bool SegmentationScene::init() {
     std::shuffle(segmentSprites.begin(), segmentSprites.end(), rng);
 
     // Add the shuffled segment sprites to the scene
-    for (auto segmentSprite : segmentSprites) {
+    for (Sprite* segmentSprite : segmentSprites) {
         addChild(segmentSprite);
     }
 
