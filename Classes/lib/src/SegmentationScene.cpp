@@ -1,6 +1,7 @@
 #include "../include/SegmentationScene.h"
 #include "cocos2d.h"
 #include "fmod.hpp"
+#include "../include/PuzzlePiece.h"
 #include <algorithm> // Include the algorithm library for std::shuffle
 #include <random>    // Include the random library for std::default_random_engine and std::random_device
 
@@ -41,7 +42,7 @@ bool SegmentationScene::init() {
     Size segmentSize(imageSize.width / numPieces, imageSize.height / numPieces);
 
     // Create a vector to store the segment sprites
-    std::vector<Sprite*> segmentSprites;
+    std::vector<PuzzlePiece*> segmentSprites;
 
     //touch listener?
     auto listener = EventListenerTouchOneByOne::create();
@@ -57,10 +58,10 @@ bool SegmentationScene::init() {
     for (int i = 0; i < numPieces; i++) {
         for (int j = 0; j < numPieces; j++) {
             // Create a sprite with a specific texture
-            auto segmentSprite = Sprite::createWithTexture(sprite->getTexture(), Rect(i * segmentSize.width, j * segmentSize.height, segmentSize.width, segmentSize.height));
-
+            //auto segmentSprite = Sprite::createWithTexture(sprite->getTexture(), Rect(i * segmentSize.width, j * segmentSize.height, segmentSize.width, segmentSize.height));
+            auto segmentSprite = PuzzlePiece(Vec2(i * segmentSize.width, j * segmentSize.height), sprite->getTexture(), Rect(i * segmentSize.width, j * segmentSize.height, segmentSize.width, segmentSize.height));
             // Set the position of the segment sprite
-            segmentSprite->setPosition(Vec2(i * segmentSize.width, j * segmentSize.height));
+            //segmentSprite->setPosition(Vec2(i * segmentSize.width, j * segmentSize.height));
 
             // Add the segment sprite to the vector
             segmentSprites.push_back(segmentSprite);
