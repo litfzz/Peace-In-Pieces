@@ -12,9 +12,13 @@ class PuzzlePiece : public cocos2d::Sprite {
     cocos2d::Vec2 originalPosition;
 
 public:
-    PuzzlePiece(cocos2d::Vec2 origPos, cocos2d::Texture2D* tex, cocos2d::Rect shape);
+    PuzzlePiece();
+    virtual ~PuzzlePiece();
+    //PuzzlePiece(cocos2d::Vec2 origPos, cocos2d::Texture2D* tex, cocos2d::Rect shape);
 
-    PuzzlePiece(cocos2d::Vec2 origPos, const cocos2d::Texture2D* tex);
+    //PuzzlePiece(cocos2d::Vec2 origPos, const cocos2d::Texture2D* tex);\
+
+    static PuzzlePiece* createWithTexture(cocos2d::Vec2 origPos, cocos2d::Texture2D* tex, cocos2d::Rect shape);
 
     virtual void onEnter() override;
     virtual void onExit() override;
@@ -22,12 +26,12 @@ public:
     bool onTouchBegan(cocos2d::Touch* touch, cocos2d::Event* event);
     void onTouchMoved(cocos2d::Touch* touch, cocos2d::Event* event);
     void onTouchEnded(cocos2d::Touch* touch, cocos2d::Event* event);
-    virtual void setPosition(cocos2d::Vec2&);
+    //virtual void setPosition(cocos2d::Vec2&);
     cocos2d::Vec2 getOriginalPosition();
 
 private:
-    cocos2d::Texture2D* tex;
-    cocos2d::Rect* r;
+    //cocos2d::Texture2D* tex;
+    //cocos2d::Rect* r;
 };
 
 #endif //MYCPPGAME_PUZZLEPIECE_H
